@@ -1,3 +1,7 @@
 aiogram
 python-dotenv
 aiosqlite
+googletrans==4.0.0-rc1
+emoji
+deep-translator
+rapidfuzz
