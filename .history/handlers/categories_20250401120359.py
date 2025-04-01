@@ -11,6 +11,7 @@ from functions.emoji import Emojilar
 router = Router()
 
 
+
 class EditCategoryState(StatesGroup):
     waiting_for_new_category = State()
 
@@ -31,27 +32,21 @@ async def show_categories(message: Message):
         async with db.execute("SELECT mahsulot_turi_nomi, emoji FROM prefixes") as cursor:
             prefix_data = await cursor.fetchall()
 
-        prefix_dict = {row[0].lower(): row[1] for row in prefix_data}
+    prefix_dict = {row[0].lower(): row[1] for row in prefix_data}
 
-        category_buttons = [
-            InlineKeyboardButton(
-                # `lower()` bilan tekshirish
-                text=f"{prefix_dict.get(row[0].lower(), '')} {row[0]}",
-                callback_data=f"category_{row[0]}"
-            ) for row in rows
-        ]
+    category_buttons = [
+        InlineKeyboardButton(text=f"{prefix_dict.get(row[0].lower(), '')} {row[0]}", callback_data=f"category_{row[0]}")
+        for row in rows
+    ]
 
     # 2 tadan tugmalarni joylashtirish
-    category_keyboard = [list(filter(None, pair)) for pair in zip_longest(
-        *[iter(category_buttons)]*3, fillvalue=None)]
+    category_keyboard = [list(filter(None, pair)) for pair in zip_longest(*[iter(category_buttons)]*3, fillvalue=None)]
 
     # Qo‘shimcha tugmalar (quyida alohida qator)
     category_keyboard.append([
         InlineKeyboardButton(text="➕ Qo‘shish", callback_data="add_category"),
-        InlineKeyboardButton(text="✏️ O‘zgartirish",
-                             callback_data="edit_category"),
-        InlineKeyboardButton(text="🗑 O‘chirish",
-                             callback_data="delete_category")
+        InlineKeyboardButton(text="✏️ O‘zgartirish", callback_data="edit_category"),
+        InlineKeyboardButton(text="🗑 O‘chirish", callback_data="delete_category")
     ])
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=category_keyboard)
@@ -60,8 +55,6 @@ async def show_categories(message: Message):
 ####################################################################
 
 # "➕ Qo‘shish" tugmasi bosilganda yangi kategoriya nomini so‘rash
-
-
 @router.callback_query(F.data == "add_category")
 async def ask_new_category(callback: CallbackQuery, state: FSMContext):
     await callback.message.delete()  # Eski ro‘yxatni o‘chirish
@@ -80,11 +73,10 @@ async def add_new_category(message: Message, state: FSMContext):
 
     async with aiosqlite.connect("budget.db") as db:
         # Takrorlanishni tekshirish
-        ################################# TRANSLATOR##########################################################
+#################################TRANSLATOR##########################################################
         from deep_translator import GoogleTranslator
         import emoji
-        translated = GoogleTranslator(
-            source="uz", target="en").translate(category_name)
+        translated = GoogleTranslator(source="uz", target="en").translate(category_name)
         # print(translated)
         translated = translated.lower()
 
@@ -186,8 +178,10 @@ async def edit_category_name(message: Message, state: FSMContext):
 
     await state.clear()
 
-###################################### O'CHIRISH###########################################################
+######################################O'CHIRISH###########################################################
 
+
+from itertools import zip_longest
 
 @router.callback_query(F.data == "delete_category")
 async def ask_category_to_delete(callback: CallbackQuery):
@@ -201,18 +195,15 @@ async def ask_category_to_delete(callback: CallbackQuery):
 
     # Kategoriya tugmalarini yaratish (faqat nomlar, hech qanday prefix yo‘q)
     category_buttons = [
-        InlineKeyboardButton(
-            text=row[0], callback_data=f"confirm_delete_{row[0]}")
+        InlineKeyboardButton(text=row[0], callback_data=f"confirm_delete_{row[0]}")
         for row in rows
     ]
 
     # 3 ta ustunli formatga o'tkazish
-    category_keyboard = [list(filter(None, group)) for group in zip_longest(
-        *[iter(category_buttons)]*3, fillvalue=None)]
+    category_keyboard = [list(filter(None, group)) for group in zip_longest(*[iter(category_buttons)]*3, fillvalue=None)]
 
     # Bekor qilish tugmachasini qo‘shish
-    category_keyboard.append([InlineKeyboardButton(
-        text="❌ Bekor qilish", callback_data="cancel_delete")])
+    category_keyboard.append([InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_delete")])
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=category_keyboard)
 
@@ -221,23 +212,21 @@ async def ask_category_to_delete(callback: CallbackQuery):
 
 @router.callback_query(F.data.startswith("confirm_delete_"))
 async def confirm_delete_category(callback: CallbackQuery):
-    # Kategoriya nomini ajratib olish
-    category_name = callback.data.split("_", 2)[2]
+    category_name = callback.data.split("_", 2)[2]  # Kategoriya nomini ajratib olish
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ Ha, o‘chirish",
-                              callback_data=f"delete_{category_name}")],
-        [InlineKeyboardButton(text="❌ Yo‘q, bekor qilish",
-                              callback_data="cancel_delete")]
+        [InlineKeyboardButton(text="✅ Ha, o‘chirish", callback_data=f"delete_{category_name}")],
+        [InlineKeyboardButton(text="❌ Yo‘q, bekor qilish", callback_data="cancel_delete")]
     ])
 
     await callback.message.edit_text(f"⚠️ '{category_name}' kategoriyasini o‘chirishni tasdiqlaysizmi?", reply_markup=keyboard)
 
 
+
+
 @router.callback_query(F.data.startswith("delete_"))
 async def delete_category(callback: CallbackQuery):
-    # Kategoriya nomini ajratib olish
-    category_name = callback.data.split("_", 1)[1]
+    category_name = callback.data.split("_", 1)[1]  # Kategoriya nomini ajratib olish
 
     async with aiosqlite.connect("budget.db") as db:
         await db.execute("DELETE FROM categories WHERE mahsulot_turi_nomi = ?", (category_name,))
@@ -248,6 +237,7 @@ async def delete_category(callback: CallbackQuery):
     # Yangi ro‘yxatni chiqarish
     keyboard = await get_category_keyboard()
     await callback.message.answer("📜 Yangilangan mahsulot turlari ro‘yxati:", reply_markup=keyboard)
+
 
 
 @router.callback_query(F.data == "cancel_delete")
