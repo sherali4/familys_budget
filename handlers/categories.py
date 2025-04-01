@@ -23,11 +23,10 @@ class CategoryState(StatesGroup):
 @router.message(F.text == "📜 Mahsulot turlari")
 async def show_categories(message: Message):
     async with aiosqlite.connect("budget.db") as db:
-        async with db.execute("SELECT mahsulot_turi_nomi, emoji FROM categories") as cursor:
+        async with db.execute("SELECT mahsulot_turi_nomi, emoji FROM categories WHERE user_id = ?", (message.from_user.id,)) as cursor:
             rows = await cursor.fetchall()
             for row in rows:
                 mahsulot_turi_nomi1, emoji1 = row
-                # print(f"{emoji1}-{mahsulot_turi_nomi1}")
         async with db.execute("SELECT mahsulot_turi_nomi, emoji FROM prefixes") as cursor:
             prefix_data = await cursor.fetchall()
 
@@ -112,7 +111,6 @@ async def add_new_category(message: Message, state: FSMContext):
                 await db.execute("INSERT INTO prefixes (mahsulot_turi_nomi, emoji) VALUES (?, ?)", (category_name, emoji_text))
             await db.commit()
 
-#############################################################################################
         async with db.execute("SELECT COUNT(*) FROM categories WHERE mahsulot_turi_nomi = ?",
                               (category_name,)) as cursor:
             (exists,) = await cursor.fetchone()
@@ -124,7 +122,7 @@ async def add_new_category(message: Message, state: FSMContext):
             if Emojilar(category_name).topish():
                 await db.execute("INSERT INTO categories (mahsulot_turi_nomi, emoji) VALUES (?, ?)", (category_name, 1))
             else:
-                await db.execute("INSERT INTO categories (mahsulot_turi_nomi, emoji) VALUES (?, ?)", (category_name, 0))
+                await db.execute("INSERT INTO categories (mahsulot_turi_nomi, emoji, user_id) VALUES (?, ?, ?)", (category_name, 0, message.from_user.id))
             await db.commit()
 
             # Eski ro‘yxatni o‘chirish
@@ -185,8 +183,6 @@ async def edit_category_name(message: Message, state: FSMContext):
         reply_markup=keyboard)
 
     await state.clear()
-
-###################################### O'CHIRISH###########################################################
 
 
 @router.callback_query(F.data == "delete_category")

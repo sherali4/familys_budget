@@ -2,7 +2,8 @@ from aiogram import Router, types
 from aiogram.filters import Command
 from aiogram.types import Message
 from bot import dp
-from database import add_user  # Agar `add_user` funksiyangiz alohida modulyatsiyalangan bo‘lsa
+# Agar `add_user` funksiyangiz alohida modulyatsiyalangan bo‘lsa
+from database import add_user
 from keyboards import main_menu  # `main_menu` tugmalar ro‘yxati
 
 router = Router()  # Router obyektini yaratamiz

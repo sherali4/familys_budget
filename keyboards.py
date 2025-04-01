@@ -10,6 +10,17 @@ main_menu = ReplyKeyboardMarkup(
     ], resize_keyboard=True
 )
 
+
+main_menu2 = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text='💰 Balans', callback_data='balance')],
+        [InlineKeyboardButton(text='🛍️ Buyurtma', callback_data='order'),
+         InlineKeyboardButton(text='⏳ Xarajat', callback_data='expenses')],
+        [InlineKeyboardButton(text='📜 Mahsulot turlari',
+                              callback_data='product_types')]
+    ]
+)
+
 main_menu1 = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="💰 Баланс")],
@@ -32,12 +43,13 @@ async def get_category_keyboard():
     # Qo‘shimcha tugmalarni pastga joylashtirish
     inline_buttons.append([
         InlineKeyboardButton(text="➕ Qo‘shish", callback_data="add_category"),
-        InlineKeyboardButton(text="✏️ O‘zgartirish", callback_data="edit_category"),
-        InlineKeyboardButton(text="🗑 O‘chirish", callback_data="delete_category")
+        InlineKeyboardButton(text="✏️ O‘zgartirish",
+                             callback_data="edit_category"),
+        InlineKeyboardButton(text="🗑 O‘chirish",
+                             callback_data="delete_category")
     ])
 
     return InlineKeyboardMarkup(inline_keyboard=inline_buttons)
-
 
 
 # 📌 Tahrirlash uchun kategoriya tanlash klaviaturasi
@@ -51,9 +63,3 @@ async def get_category_selection_keyboard():
     inline_buttons = [buttons[i:i + 2] for i in range(0, len(buttons), 2)]
 
     return InlineKeyboardMarkup(inline_keyboard=inline_buttons)
-
-
-
-
-
-
