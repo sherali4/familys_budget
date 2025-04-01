@@ -4,6 +4,8 @@ venv/
 .venv/
 env/
 __pycache__/
+.history/
+
 
 # Byte-compiled files
 *.pyc
