@@ -1,24 +1,38 @@
 import aiosqlite
 from config import DB_NAME
 
-
 async def init_db():
     async with aiosqlite.connect(DB_NAME) as db:
         await db.execute('''CREATE TABLE IF NOT EXISTS users (
-                            id INTEGER PRIMARY KEY, 
+                            id INTEGER PRIMARY KEY,
+                            role INTEGER, 
                             telegram_id INTEGER UNIQUE, 
                             name TEXT)''')
 
-        await db.execute('''CREATE TABLE IF NOT EXISTS transactions (
+        await db.execute('''CREATE TABLE IF NOT EXISTS categories (
+                            id INTEGER PRIMARY KEY, 
+                            mahsulot_turi_nomi TEXT, 
+                            izoh TEXT,
+                            user_id INTEGER,
+                            emoji INTEGER,                         
+                            FOREIGN KEY(user_id) REFERENCES users(telegram_id))''')
+
+        await db.execute('''CREATE TABLE IF NOT EXISTS zakazlar (
                             id INTEGER PRIMARY KEY, 
                             user_id INTEGER, 
                             type TEXT, 
                             amount REAL, 
                             category TEXT,
                             date TEXT,
-                            FOREIGN KEY(user_id) REFERENCES users(id))''')
+                            FOREIGN KEY(user_id) REFERENCES users(telegram_id))''')
+
+        await db.execute('''CREATE TABLE IF NOT EXISTS prefixes (
+                            id INTEGER PRIMARY KEY, 
+                            mahsulot_turi_nomi TEXT UNIQUE, 
+                            emoji TEXT)''')  # ✅ Xato tuzatildi
 
         await db.commit()
+
 
 
 async def execute_query(query, params=()):
@@ -29,7 +43,7 @@ async def execute_query(query, params=()):
 
 
 async def add_user(telegram_id, name):
-    await execute_query("INSERT OR IGNORE INTO users (telegram_id, name) VALUES (?, ?)", (telegram_id, name))
+    await execute_query("INSERT OR IGNORE INTO users (telegram_id, name, role) VALUES (?, ?, ?)", (telegram_id, name, 0))
 
 
 async def add_transaction(user_id, type, amount, category, date):
